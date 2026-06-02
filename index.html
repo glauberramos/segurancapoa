@@ -132,6 +132,66 @@ h2 .avg-badge strong {
   border-radius: 12px;
   padding: 1rem 1rem 0.5rem;
 }
+.summary-text {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-left: 3px solid #3b82f6;
+  border-radius: 12px;
+  padding: 1.1rem 1.25rem;
+  margin: 1.5rem 0 0.5rem;
+  font-size: 1rem;
+  line-height: 1.65;
+  color: var(--text);
+}
+.summary-text p { margin: 0; }
+.summary-text p + p { margin-top: 0.6rem; }
+.summary-text strong { font-weight: 600; }
+.summary-text .term-low { color: #2ecc71; }
+.summary-text .term-med { color: #f1c40f; }
+.summary-text .term-high { color: #f39c12; }
+.summary-text .term-epidemic { color: #e74c3c; }
+.faq {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+.faq details {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 0 1rem;
+  overflow: hidden;
+}
+.faq summary {
+  list-style: none;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 0.95rem;
+  color: var(--text);
+  padding: 0.9rem 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+.faq summary::-webkit-details-marker { display: none; }
+.faq summary::after {
+  content: '+';
+  color: var(--muted);
+  font-size: 1.3rem;
+  font-weight: 400;
+  line-height: 1;
+  transition: transform 0.2s;
+}
+.faq details[open] summary::after { content: '−'; }
+.faq .faq-answer {
+  color: var(--muted);
+  font-size: 0.92rem;
+  line-height: 1.6;
+  padding: 0 0 1rem;
+  margin: 0;
+}
+.faq .faq-answer strong { color: var(--text); font-weight: 600; }
 .cards {
   display: grid;
   grid-template-columns: repeat(5, 1fr);
@@ -213,6 +273,8 @@ footer a:hover { text-decoration: underline; }
   <p class="subtitle">Homicídios dolosos e roubos · jan/2011 – <span id="lastUpdate"></span></p>
 </header>
 
+<section class="summary-text" id="summaryText"></section>
+
 <h2>Vítimas de violência letal intencional (CVLI) por mês</h2>
 <div class="cards" id="summaryCards"></div>
 <div class="chart-wrap"><canvas id="chartMonthly"></canvas></div>
@@ -225,6 +287,9 @@ footer a:hover { text-decoration: underline; }
 
 <h2>Estelionato por mês <span class="avg-badge" id="avgFraud"></span></h2>
 <div class="chart-wrap"><canvas id="chartFraudMonthly"></canvas></div>
+
+<h2>Perguntas frequentes</h2>
+<div class="faq" id="faq"></div>
 <footer>
 Esse site não é oficial. Fonte dos dados: <a href="https://www.ssp.rs.gov.br/indicadores-criminais" target="_blank" rel="noopener">SSP-RS</a> (CVLI, roubos) · <a href="https://www.ibge.gov.br/cidades-e-estados/rs/porto-alegre.html" target="_blank" rel="noopener">IBGE</a> (população). Classificação de violência letal: <a href="https://www.unodc.org/unodc/en/data-and-analysis/global-study-on-homicide.html" target="_blank" rel="noopener">OMS/UNODC</a>. Dados mensais a partir de jan/2011; 2026 inclui jan–abr. CVLI = vítimas de homicídio doloso + latrocínio + lesão corporal seguida de morte. Em 2011 só estão disponíveis ocorrências de homicídio doloso + latrocínio; de 2012 em diante a série usa vítimas.
 </footer>
@@ -338,6 +403,82 @@ document.getElementById('summaryCards').innerHTML = cards.map(c => `
     <div class="sub">${c.sub}</div>
   </div>
 `).join('');
+
+// ---- Resumo em texto + FAQ (gerados a partir dos números já calculados) ----
+const lastUpdateText = document.getElementById('lastUpdate').textContent;
+const fmtInt = n => Math.round(n).toLocaleString('pt-BR');
+const fmtPct = p => Math.abs(p).toLocaleString('pt-BR', { minimumFractionDigits: 1, maximumFractionDigits: 1 });
+const pct12 = arr => {
+  const cur = arr.slice(-12).reduce((a, b) => a + b, 0);
+  const prev = arr.slice(-24, -12).reduce((a, b) => a + b, 0);
+  return prev ? ((cur - prev) / prev) * 100 : 0;
+};
+const trendPhrase = p => {
+  if (p < -0.5) return `queda de ${fmtPct(p)}%`;
+  if (p > 0.5) return `alta de ${fmtPct(p)}%`;
+  return `estabilidade (variação de ${fmtPct(p)}%)`;
+};
+const termCls = { low: 'term-low', med: 'term-med', high: 'term-high', epidemic: 'term-epidemic' }[cls.cls];
+const clsLabel = cls.label.toLowerCase();
+
+const theftAvg = last12AvgOf(theftMonthlyData);
+const vehAvg = last12AvgOf(vehicleMonthlyData);
+const theftPct = pct12(theftMonthlyData);
+const vehPct = pct12(vehicleMonthlyData);
+
+document.getElementById('summaryText').innerHTML = `
+  <p>Nos últimos 12 meses (até ${lastUpdateText}), Porto Alegre registrou <strong>${fmtInt(last12Sum)}</strong> vítimas de violência letal intencional (CVLI) — uma <strong>${trendPhrase(pctChange)}</strong> em relação aos 12 meses anteriores (${fmtInt(prev12Sum)}). Isso equivale a uma taxa de <strong>${fmtAvg(annualRate)} por 100 mil habitantes</strong> ao ano, classificada pela OMS como <strong class="${termCls}">${clsLabel}</strong>. Na média, são <strong>${fmtAvg(last12Avg)}</strong> vítimas por mês.</p>
+  <p>No mesmo período, a cidade teve em média <strong>${fmtAvg(theftAvg)}</strong> roubos e <strong>${fmtAvg(vehAvg)}</strong> roubos de veículo por mês — ${trendPhrase(theftPct)} e ${trendPhrase(vehPct)} na comparação anual, respectivamente.</p>
+`;
+
+const faqItems = [
+  {
+    q: 'Porto Alegre é perigosa?',
+    a: `Segundo os dados mais recentes da SSP-RS, Porto Alegre tem uma taxa de <strong>${fmtAvg(annualRate)} homicídios por 100 mil habitantes</strong> ao ano — faixa classificada pela Organização Mundial da Saúde como <strong>${clsLabel}</strong> (a OMS considera epidêmica qualquer taxa acima de 10/100 mil). Nos últimos 12 meses a violência letal está em <strong>${trendPhrase(pctChange)}</strong> em relação ao período anterior.`
+  },
+  {
+    q: 'A violência em Porto Alegre está aumentando ou diminuindo?',
+    a: `Nos últimos 12 meses houve <strong>${trendPhrase(pctChange)}</strong> nas vítimas de violência letal (CVLI): ${fmtInt(last12Sum)} vítimas, contra ${fmtInt(prev12Sum)} nos 12 meses anteriores. No mesmo recorte, os roubos tiveram ${trendPhrase(theftPct)} e os roubos de veículo, ${trendPhrase(vehPct)}.`
+  },
+  {
+    q: 'Quantos homicídios Porto Alegre tem por ano?',
+    a: `Nos últimos 12 meses foram <strong>${fmtInt(last12Sum)}</strong> vítimas de violência letal intencional (CVLI), uma média de <strong>${fmtAvg(last12Avg)} por mês</strong>. O CVLI soma homicídios dolosos, latrocínios e lesões corporais seguidas de morte.`
+  },
+  {
+    q: 'Qual a taxa de homicídios de Porto Alegre?',
+    a: `A taxa é de <strong>${fmtAvg(annualRate)} por 100 mil habitantes</strong> ao ano. A OMS classifica como baixa (até 3), média (3 a 10), alta/epidêmica (10 a 30) ou muito alta (acima de 30). Porto Alegre está na faixa <strong>${clsLabel}</strong>.`
+  },
+  {
+    q: 'Os roubos em Porto Alegre estão aumentando?',
+    a: `Nos últimos 12 meses a cidade teve em média <strong>${fmtAvg(theftAvg)} roubos</strong> e <strong>${fmtAvg(vehAvg)} roubos de veículo</strong> por mês. Na comparação com os 12 meses anteriores, os roubos tiveram ${trendPhrase(theftPct)} e os roubos de veículo, ${trendPhrase(vehPct)}.`
+  },
+  {
+    q: 'De onde vêm esses dados e quando são atualizados?',
+    a: `Os dados de criminalidade são oficiais, publicados pela Secretaria da Segurança Pública do RS (SSP-RS), e a população é estimada pelo IBGE. A série é mensal, começa em janeiro de 2011 e vai até ${lastUpdateText}, sendo atualizada a cada novo relatório da SSP-RS. Este site não é oficial.`
+  }
+];
+
+document.getElementById('faq').innerHTML = faqItems.map(f => `
+  <details>
+    <summary>${f.q}</summary>
+    <p class="faq-answer">${f.a}</p>
+  </details>
+`).join('');
+
+const stripTags = s => s.replace(/<[^>]+>/g, '');
+const faqSchema = {
+  '@context': 'https://schema.org',
+  '@type': 'FAQPage',
+  mainEntity: faqItems.map(f => ({
+    '@type': 'Question',
+    name: f.q,
+    acceptedAnswer: { '@type': 'Answer', text: stripTags(f.a) }
+  }))
+};
+const faqScript = document.createElement('script');
+faqScript.type = 'application/ld+json';
+faqScript.textContent = JSON.stringify(faqSchema);
+document.head.appendChild(faqScript);
 
 new Chart(document.getElementById('chartMonthly'), {
   type: 'line',

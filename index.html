@@ -291,7 +291,7 @@ footer a:hover { text-decoration: underline; }
 <h2>Perguntas frequentes</h2>
 <div class="faq" id="faq"></div>
 <footer>
-Esse site não é oficial. Fonte dos dados: <a href="https://www.ssp.rs.gov.br/indicadores-criminais" target="_blank" rel="noopener">SSP-RS</a> (CVLI, roubos) · <a href="https://www.ibge.gov.br/cidades-e-estados/rs/porto-alegre.html" target="_blank" rel="noopener">IBGE</a> (população). Classificação de violência letal: <a href="https://www.unodc.org/unodc/en/data-and-analysis/global-study-on-homicide.html" target="_blank" rel="noopener">OMS/UNODC</a>. Dados mensais a partir de jan/2011; 2026 inclui jan–jul. CVLI = vítimas de homicídio doloso + latrocínio + lesão corporal seguida de morte. Em 2011 só estão disponíveis ocorrências de homicídio doloso + latrocínio; de 2012 em diante a série usa vítimas.
+Esse site não é oficial. Fonte dos dados: <a href="https://www.ssp.rs.gov.br/indicadores-criminais" target="_blank" rel="noopener">SSP-RS</a> (CVLI, roubos) · <a href="https://www.ibge.gov.br/cidades-e-estados/rs/porto-alegre.html" target="_blank" rel="noopener">IBGE</a> (população). Classificação de violência letal: <a href="https://www.unodc.org/unodc/en/data-and-analysis/global-study-on-homicide.html" target="_blank" rel="noopener">OMS/UNODC</a>. Dados mensais a partir de jan/2011; 2026 inclui jan–jul. CVLI = vítimas de homicídio doloso + feminicídio + latrocínio + lesão corporal seguida de morte. Em 2011 só estão disponíveis ocorrências de homicídio doloso + latrocínio; de 2012 em diante a série usa vítimas.
 </footer>
 
 <script>
@@ -442,7 +442,7 @@ const faqItems = [
   },
   {
     q: 'Quantos homicídios Porto Alegre tem por ano?',
-    a: `Nos últimos 12 meses foram <strong>${fmtInt(last12Sum)}</strong> vítimas de violência letal intencional (CVLI), uma média de <strong>${fmtAvg(last12Avg)} por mês</strong>. O CVLI soma homicídios dolosos, latrocínios e lesões corporais seguidas de morte.`
+    a: `Nos últimos 12 meses foram <strong>${fmtInt(last12Sum)}</strong> vítimas de violência letal intencional (CVLI), uma média de <strong>${fmtAvg(last12Avg)} por mês</strong>. O CVLI soma homicídios dolosos, feminicídios, latrocínios e lesões corporais seguidas de morte.`
   },
   {
     q: 'Qual a taxa de homicídios de Porto Alegre?',
@@ -451,6 +451,14 @@ const faqItems = [
   {
     q: 'Os roubos em Porto Alegre estão aumentando?',
     a: `Nos últimos 12 meses a cidade teve em média <strong>${fmtAvg(theftAvg)} roubos</strong> e <strong>${fmtAvg(vehAvg)} roubos de veículo</strong> por mês. Na comparação com os 12 meses anteriores, os roubos tiveram ${trendPhrase(theftPct)} e os roubos de veículo, ${trendPhrase(vehPct)}.`
+  },
+  {
+    q: 'O que é CVLI?',
+    a: `CVLI significa <strong>Crimes Violentos Letais Intencionais</strong>: o total de vítimas de <strong>homicídio doloso</strong> (incluindo <strong>feminicídio</strong> e infanticídio), <strong>latrocínio</strong> (roubo seguido de morte) e <strong>lesão corporal seguida de morte</strong>, conforme registrado pela SSP-RS. É o indicador brasileiro equivalente ao "homicídio intencional" usado pela ONU (UNODC) e pela OMS nas comparações internacionais — por isso mede melhor a violência letal do que contar só homicídios dolosos, que deixariam de fora feminicídios e latrocínios. Mortes sem intenção (homicídio culposo, como acidentes de trânsito) não entram.`
+  },
+  {
+    q: 'Feminicídios estão incluídos nos números?',
+    a: `Sim. Desde que o feminicídio virou tipo penal próprio, a SSP-RS o registra separadamente do homicídio doloso, mas o total de CVLI usado neste site inclui as vítimas de feminicídio.`
   },
   {
     q: 'De onde vêm esses dados e quando são atualizados?',

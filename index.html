@@ -117,29 +117,6 @@ header.hero {
   cursor: pointer;
   max-width: 100%;
 }
-.unit-toggle {
-  display: inline-flex;
-  margin: 0 0 1rem 0.5rem;
-  background: var(--panel);
-  border: 1px solid var(--border);
-  border-radius: 10px;
-  padding: 0.25rem;
-  vertical-align: top;
-}
-.unit-toggle button {
-  background: none;
-  border: 0;
-  color: var(--muted);
-  font: inherit;
-  font-size: 0.82rem;
-  font-weight: 600;
-  padding: 0.5rem 0.75rem;
-  border-radius: 7px;
-  cursor: pointer;
-}
-.unit-toggle button[aria-pressed="true"] { background: var(--panel-2); color: var(--text); }
-.unit-toggle button:focus-visible { outline: 2px solid #3b82f6; outline-offset: 1px; }
-@media (max-width: 720px) { .unit-toggle { margin-left: 0; } }
 .city-picker select:focus-visible { outline: 2px solid #3b82f6; outline-offset: 1px; }
 header.hero h1 {
   font-size: 1.75rem;
@@ -331,10 +308,6 @@ footer a:hover { text-decoration: underline; }
     <label for="municipioSelect">Município</label>
     <select id="municipioSelect" aria-label="Escolha o município"></select>
   </div>
-  <div class="unit-toggle" role="group" aria-label="Unidade dos gráficos">
-    <button type="button" data-unit="total" aria-pressed="true">Total</button>
-    <button type="button" data-unit="rate" aria-pressed="false">Por 100 mil hab.</button>
-  </div>
   <h1>Segurança em <span id="cityName">Porto Alegre</span></h1>
   <p class="subtitle">Homicídios dolosos e roubos · jan/2011 – <span id="lastUpdate"></span></p>
 </header>
@@ -451,12 +424,8 @@ const methodologyBreak = {
   }
 };
 
-let unit = 'total';
 const charts = {};
-function lineChart(id, label, color, rawData, population, plugins = []) {
-  const perCapita = unit === 'rate';
-  const data = perCapita ? rawData.map(v => v === null ? null : +(v / population * 100000).toFixed(2)) : rawData;
-  if (perCapita) label = label.replace('(mês)', '(por 100 mil hab./mês)');
+function lineChart(id, label, color, data, plugins = []) {
   if (charts[id]) charts[id].destroy();
   charts[id] = new Chart(document.getElementById(id), {
     plugins,
@@ -639,10 +608,10 @@ function render(key) {
     }))
   });
 
-  lineChart('chartMonthly', 'CVLI — vítimas (mês)', '#e74c3c', monthlyData, population, [methodologyBreak]);
-  lineChart('chartTheftMonthly', 'Roubos (mês)', '#3498db', theftMonthlyData, population);
-  lineChart('chartFraudMonthly', 'Estelionato (mês)', '#f39c12', fraudMonthlyData, population);
-  lineChart('chartVehicleMonthly', 'Roubo de Veículo (mês)', '#9b59b6', vehicleMonthlyData, population);
+  lineChart('chartMonthly', 'CVLI — vítimas (mês)', '#e74c3c', monthlyData, [methodologyBreak]);
+  lineChart('chartTheftMonthly', 'Roubos (mês)', '#3498db', theftMonthlyData);
+  lineChart('chartFraudMonthly', 'Estelionato (mês)', '#f39c12', fraudMonthlyData);
+  lineChart('chartVehicleMonthly', 'Roubo de Veículo (mês)', '#9b59b6', vehicleMonthlyData);
 }
 
 // ---- Seletor de município (?m=canoas) ----
@@ -666,11 +635,6 @@ select.addEventListener('change', () => {
   history.pushState(null, '', url);
   render(key);
 });
-document.querySelectorAll('.unit-toggle button').forEach(btn => btn.addEventListener('click', () => {
-  unit = btn.dataset.unit;
-  document.querySelectorAll('.unit-toggle button').forEach(b => b.setAttribute('aria-pressed', String(b === btn)));
-  render(select.value);
-}));
 window.addEventListener('popstate', () => {
   select.value = keyFromUrl();
   render(select.value);

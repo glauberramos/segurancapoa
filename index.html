@@ -357,7 +357,7 @@ footer a:hover { text-decoration: underline; }
 <h2>Perguntas frequentes</h2>
 <div class="faq" id="faq"></div>
 <footer>
-Esse site não é oficial. Fonte dos dados: <a href="https://www.ssp.rs.gov.br/indicadores-criminais" target="_blank" rel="noopener">SSP-RS</a> (CVLI, roubos) · <a href="https://www.ibge.gov.br/estatisticas/sociais/populacao/9103-estimativas-de-populacao.html" target="_blank" rel="noopener">IBGE</a> (população, estimativa 2025). Municípios disponíveis: Porto Alegre, Região Metropolitana e Litoral Norte. As taxas usam a população residente; nas cidades do litoral, que recebem muitos veranistas no verão, a taxa por habitante tende a ficar acima do risco real nessa época. Classificação de violência letal: <a href="https://www.unodc.org/unodc/en/data-and-analysis/global-study-on-homicide.html" target="_blank" rel="noopener">OMS/UNODC</a>. Dados mensais a partir de jan/2011; 2026 inclui jan–jul. A partir de jan/2018 a série de violência letal usa o total oficial de vítimas de CVLI da SSP-RS: homicídio doloso, feminicídio, latrocínio, lesão corporal seguida de morte, mortes decorrentes de intervenção policial, infanticídio, homicídio doloso de trânsito, aborto e induzimento/auxílio ao suicídio — o mais próximo, nessas planilhas, da definição internacional de homicídio intencional (UNODC). De 2012 a 2017 as planilhas não trazem esse total, e a série soma vítimas de homicídio doloso + latrocínio + lesão corporal seguida de morte (sem detalhar feminicídio e mortes por intervenção policial), por isso há um degrau em 2018. Em 2011 só estão disponíveis ocorrências de homicídio doloso + latrocínio. Taxas por 100 mil habitantes usam a estimativa de população do IBGE de 2025 para toda a série.
+Esse site não é oficial. Fonte dos dados: <a href="https://www.ssp.rs.gov.br/indicadores-criminais" target="_blank" rel="noopener">SSP-RS</a> (CVLI, roubos) · <a href="https://www.ibge.gov.br/estatisticas/sociais/populacao/9103-estimativas-de-populacao.html" target="_blank" rel="noopener">IBGE</a> (população, estimativa 2025). Municípios disponíveis: Porto Alegre, Região Metropolitana, Litoral Norte e Serra. As taxas usam a população residente; em cidades turísticas do litoral e da serra, que recebem muitos visitantes na alta temporada, a taxa por habitante tende a ficar acima do risco real nessas épocas. Pinto Bandeira não tem dados de 2011, antes de sua instalação como município. Classificação de violência letal: <a href="https://www.unodc.org/unodc/en/data-and-analysis/global-study-on-homicide.html" target="_blank" rel="noopener">OMS/UNODC</a>. Dados mensais a partir de jan/2011; 2026 inclui jan–jul. A partir de jan/2018 a série de violência letal usa o total oficial de vítimas de CVLI da SSP-RS: homicídio doloso, feminicídio, latrocínio, lesão corporal seguida de morte, mortes decorrentes de intervenção policial, infanticídio, homicídio doloso de trânsito, aborto e induzimento/auxílio ao suicídio — o mais próximo, nessas planilhas, da definição internacional de homicídio intencional (UNODC). De 2012 a 2017 as planilhas não trazem esse total, e a série soma vítimas de homicídio doloso + latrocínio + lesão corporal seguida de morte (sem detalhar feminicídio e mortes por intervenção policial), por isso há um degrau em 2018. Em 2011 só estão disponíveis ocorrências de homicídio doloso + latrocínio. Taxas por 100 mil habitantes usam a estimativa de população do IBGE de 2025 para toda a série.
 </footer>
 
 <script src="municipios.js"></script>
@@ -387,7 +387,10 @@ const gridOpts = {
 const movingAvg = (arr, w) => arr.map((_, i) => {
   if (i < w - 1) return null;
   let s = 0;
-  for (let j = i - w + 1; j <= i; j++) s += arr[j];
+  for (let j = i - w + 1; j <= i; j++) {
+    if (arr[j] === null) return null; // mês sem dados (município ainda não existia)
+    s += arr[j];
+  }
   return +(s / w).toFixed(1);
 });
 
@@ -452,7 +455,7 @@ let unit = 'total';
 const charts = {};
 function lineChart(id, label, color, rawData, population, plugins = []) {
   const perCapita = unit === 'rate';
-  const data = perCapita ? rawData.map(v => +(v / population * 100000).toFixed(2)) : rawData;
+  const data = perCapita ? rawData.map(v => v === null ? null : +(v / population * 100000).toFixed(2)) : rawData;
   if (perCapita) label = label.replace('(mês)', '(por 100 mil hab./mês)');
   if (charts[id]) charts[id].destroy();
   charts[id] = new Chart(document.getElementById(id), {
@@ -615,7 +618,7 @@ function render(key) {
     },
     {
       q: 'De onde vêm esses dados e quando são atualizados?',
-      a: `Os dados de criminalidade são oficiais, publicados pela Secretaria da Segurança Pública do RS (SSP-RS), e a população é estimada pelo IBGE. A série é mensal, começa em janeiro de 2011 e vai até ${lastUpdateText}, sendo atualizada a cada novo relatório da SSP-RS. Além de Porto Alegre, o site cobre os municípios da Região Metropolitana e do Litoral Norte. Este site não é oficial.`
+      a: `Os dados de criminalidade são oficiais, publicados pela Secretaria da Segurança Pública do RS (SSP-RS), e a população é estimada pelo IBGE. A série é mensal, começa em janeiro de 2011 e vai até ${lastUpdateText}, sendo atualizada a cada novo relatório da SSP-RS. Além de Porto Alegre, o site cobre os municípios da Região Metropolitana, do Litoral Norte e da Serra. Este site não é oficial.`
     }
   ];
 
@@ -649,7 +652,7 @@ const optionsFor = regiao => Object.keys(DATA.municipios)
   .sort((a, b) => DATA.municipios[a].nome.localeCompare(DATA.municipios[b].nome, 'pt-BR'))
   .map(k => `<option value="${k}">${DATA.municipios[k].nome}</option>`).join('');
 select.innerHTML = `<option value="${DEFAULT_KEY}">${DATA.municipios[DEFAULT_KEY].nome}</option>` +
-  ['Região Metropolitana', 'Litoral Norte'].map(r => `<optgroup label="${r}">${optionsFor(r)}</optgroup>`).join('');
+  ['Região Metropolitana', 'Litoral Norte', 'Serra'].map(r => `<optgroup label="${r}">${optionsFor(r)}</optgroup>`).join('');
 
 const keyFromUrl = () => keyBySlug[new URLSearchParams(location.search).get('m') || ''] || DEFAULT_KEY;
 select.value = keyFromUrl();

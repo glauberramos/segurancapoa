@@ -78,9 +78,32 @@ LITORAL_NORTE = {
     'XANGRI-LA': ('Xangri-lá', 16949),
 }
 
+# Serra: Região Metropolitana da Serra Gaúcha (13 municípios) + Gramado, Canela,
+# Nova Petrópolis e São Francisco de Paula (Hortênsias)
+SERRA = {
+    'ANTONIO PRADO': ('Antônio Prado', 13332),
+    'BENTO GONCALVES': ('Bento Gonçalves', 127977),
+    'CARLOS BARBOSA': ('Carlos Barbosa', 31585),
+    'CAXIAS DO SUL': ('Caxias do Sul', 479599),
+    'FARROUPILHA': ('Farroupilha', 72552),
+    'FLORES DA CUNHA': ('Flores da Cunha', 32015),
+    'GARIBALDI': ('Garibaldi', 35563),
+    'IPE': ('Ipê', 5490),
+    'MONTE BELO DO SUL': ('Monte Belo do Sul', 2608),
+    'NOVA PADUA': ('Nova Pádua', 2389),
+    'PINTO BANDEIRA': ('Pinto Bandeira', 2785),
+    'SANTA TEREZA': ('Santa Tereza', 1529),
+    'SAO MARCOS': ('São Marcos', 21549),
+    'CANELA': ('Canela', 50715),
+    'GRAMADO': ('Gramado', 41705),
+    'NOVA PETROPOLIS': ('Nova Petrópolis', 23934),
+    'SAO FRANCISCO DE PAULA': ('São Francisco de Paula', 22388),
+}
+
 MUNICIPIOS = {
     **{k: (*v, 'Região Metropolitana') for k, v in RMPA.items()},
     **{k: (*v, 'Litoral Norte') for k, v in LITORAL_NORTE.items()},
+    **{k: (*v, 'Serra') for k, v in SERRA.items()},
 }
 
 
@@ -167,12 +190,12 @@ def main():
         for i, month in enumerate(load_year(year)):
             labels.append(f"{MONTHS[i].capitalize()}/{str(year)[2:]}")
             for k in MUNICIPIOS:
-                d = month[k]
+                d = month.get(k)  # None antes da emancipação (ex.: Pinto Bandeira em 2011)
                 s = series[k]
-                s['cvli'].append(cvli(d, year))
-                s['roubos'].append(d['roubos'])
-                s['roubo_veic'].append(d['roubo_veic'])
-                s['estel'].append(d['estel'])
+                s['cvli'].append(cvli(d, year) if d else None)
+                s['roubos'].append(d['roubos'] if d else None)
+                s['roubo_veic'].append(d['roubo_veic'] if d else None)
+                s['estel'].append(d['estel'] if d else None)
 
     data = {
         'labels': labels,

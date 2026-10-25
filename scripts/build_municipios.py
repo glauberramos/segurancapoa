@@ -15,8 +15,9 @@ import xlrd
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 MONTHS = ['JAN', 'FEV', 'MAR', 'ABR', 'MAI', 'JUN', 'JUL', 'AGO', 'SET', 'OUT', 'NOV', 'DEZ']
 
-# Região Metropolitana de Porto Alegre (34 municípios) — população: IBGE, estimativa 2025.
-MUNICIPIOS = {
+# População: IBGE, estimativa 2025.
+# Região Metropolitana de Porto Alegre (34 municípios)
+RMPA = {
     'PORTO ALEGRE': ('Porto Alegre', 1388794),
     'ALVORADA': ('Alvorada', 194062),
     'ARARICA': ('Araricá', 8831),
@@ -51,6 +52,35 @@ MUNICIPIOS = {
     'TAQUARA': ('Taquara', 54353),
     'TRIUNFO': ('Triunfo', 28435),
     'VIAMAO': ('Viamão', 231996),
+}
+
+# Aglomeração Urbana do Litoral Norte (20 municípios)
+LITORAL_NORTE = {
+    'ARROIO DO SAL': ('Arroio do Sal', 11418),
+    'BALNEARIO PINHAL': ('Balneário Pinhal', 15413),
+    'CAPAO DA CANOA': ('Capão da Canoa', 66234),
+    'CAPIVARI DO SUL': ('Capivari do Sul', 4080),
+    'CARAA': ('Caraá', 7555),
+    'CIDREIRA': ('Cidreira', 17583),
+    'DOM PEDRO DE ALCANTARA': ('Dom Pedro de Alcântara', 2617),
+    'IMBE': ('Imbé', 28027),
+    'ITATI': ('Itati', 2696),
+    'MAMPITUBA': ('Mampituba', 3203),
+    'MAQUINE': ('Maquiné', 7593),
+    'MORRINHOS DO SUL': ('Morrinhos do Sul', 3133),
+    'OSORIO': ('Osório', 48999),
+    'PALMARES DO SUL': ('Palmares do Sul', 13189),
+    'TERRA DE AREIA': ('Terra de Areia', 10575),
+    'TORRES': ('Torres', 43344),
+    'TRAMANDAI': ('Tramandaí', 56430),
+    'TRES CACHOEIRAS': ('Três Cachoeiras', 11224),
+    'TRES FORQUILHAS': ('Três Forquilhas', 2813),
+    'XANGRI-LA': ('Xangri-lá', 16949),
+}
+
+MUNICIPIOS = {
+    **{k: (*v, 'Região Metropolitana') for k, v in RMPA.items()},
+    **{k: (*v, 'Litoral Norte') for k, v in LITORAL_NORTE.items()},
 }
 
 
@@ -147,7 +177,8 @@ def main():
     data = {
         'labels': labels,
         'municipios': {
-            k: {'nome': MUNICIPIOS[k][0], 'populacao': MUNICIPIOS[k][1], **series[k]} for k in MUNICIPIOS
+            k: {'nome': MUNICIPIOS[k][0], 'populacao': MUNICIPIOS[k][1], 'regiao': MUNICIPIOS[k][2], **series[k]}
+            for k in MUNICIPIOS
         },
     }
     with open(os.path.join(ROOT, 'municipios.js'), 'w', encoding='utf-8') as f:

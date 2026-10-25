@@ -357,7 +357,7 @@ footer a:hover { text-decoration: underline; }
 <h2>Perguntas frequentes</h2>
 <div class="faq" id="faq"></div>
 <footer>
-Esse site não é oficial. Fonte dos dados: <a href="https://www.ssp.rs.gov.br/indicadores-criminais" target="_blank" rel="noopener">SSP-RS</a> (CVLI, roubos) · <a href="https://www.ibge.gov.br/estatisticas/sociais/populacao/9103-estimativas-de-populacao.html" target="_blank" rel="noopener">IBGE</a> (população, estimativa 2025). Municípios disponíveis: Porto Alegre e Região Metropolitana. Classificação de violência letal: <a href="https://www.unodc.org/unodc/en/data-and-analysis/global-study-on-homicide.html" target="_blank" rel="noopener">OMS/UNODC</a>. Dados mensais a partir de jan/2011; 2026 inclui jan–jul. A partir de jan/2018 a série de violência letal usa o total oficial de vítimas de CVLI da SSP-RS: homicídio doloso, feminicídio, latrocínio, lesão corporal seguida de morte, mortes decorrentes de intervenção policial, infanticídio, homicídio doloso de trânsito, aborto e induzimento/auxílio ao suicídio — o mais próximo, nessas planilhas, da definição internacional de homicídio intencional (UNODC). De 2012 a 2017 as planilhas não trazem esse total, e a série soma vítimas de homicídio doloso + latrocínio + lesão corporal seguida de morte (sem detalhar feminicídio e mortes por intervenção policial), por isso há um degrau em 2018. Em 2011 só estão disponíveis ocorrências de homicídio doloso + latrocínio. Taxas por 100 mil habitantes usam a estimativa de população do IBGE de 2025 para toda a série.
+Esse site não é oficial. Fonte dos dados: <a href="https://www.ssp.rs.gov.br/indicadores-criminais" target="_blank" rel="noopener">SSP-RS</a> (CVLI, roubos) · <a href="https://www.ibge.gov.br/estatisticas/sociais/populacao/9103-estimativas-de-populacao.html" target="_blank" rel="noopener">IBGE</a> (população, estimativa 2025). Municípios disponíveis: Porto Alegre, Região Metropolitana e Litoral Norte. As taxas usam a população residente; nas cidades do litoral, que recebem muitos veranistas no verão, a taxa por habitante tende a ficar acima do risco real nessa época. Classificação de violência letal: <a href="https://www.unodc.org/unodc/en/data-and-analysis/global-study-on-homicide.html" target="_blank" rel="noopener">OMS/UNODC</a>. Dados mensais a partir de jan/2011; 2026 inclui jan–jul. A partir de jan/2018 a série de violência letal usa o total oficial de vítimas de CVLI da SSP-RS: homicídio doloso, feminicídio, latrocínio, lesão corporal seguida de morte, mortes decorrentes de intervenção policial, infanticídio, homicídio doloso de trânsito, aborto e induzimento/auxílio ao suicídio — o mais próximo, nessas planilhas, da definição internacional de homicídio intencional (UNODC). De 2012 a 2017 as planilhas não trazem esse total, e a série soma vítimas de homicídio doloso + latrocínio + lesão corporal seguida de morte (sem detalhar feminicídio e mortes por intervenção policial), por isso há um degrau em 2018. Em 2011 só estão disponíveis ocorrências de homicídio doloso + latrocínio. Taxas por 100 mil habitantes usam a estimativa de população do IBGE de 2025 para toda a série.
 </footer>
 
 <script src="municipios.js"></script>
@@ -580,7 +580,7 @@ function render(key) {
   const vehRate = ratePer100k(vehicleMonthlyData, population);
 
   document.getElementById('summaryText').innerHTML = `
-    <p>Nos últimos 12 meses (até ${lastUpdateText}), ${nome} registrou <strong>${fmtInt(last12Sum)}</strong> vítimas de violência letal intencional (CVLI) — uma <strong>${trendPhrase(pctChange)}</strong> em relação aos 12 meses anteriores (${fmtInt(prev12Sum)}). Isso equivale a uma taxa de <strong>${fmtAvg(annualRate)} por 100 mil habitantes</strong> ao ano, classificada pela OMS como <strong class="${termCls}">${clsLabel}</strong>. Na média, são <strong>${fmtAvg(last12Avg)}</strong> vítimas por mês.</p>
+    <p>Nos últimos 12 meses (até ${lastUpdateText}), ${nome} registrou <strong>${fmtInt(last12Sum)}</strong> vítimas de violência letal intencional (CVLI) — uma <strong>${trendPhrase(pctChange)}</strong> em relação aos 12 meses anteriores (${fmtInt(prev12Sum)}). Isso equivale a uma taxa de <strong>${fmtAvg(annualRate)} por 100 mil habitantes</strong> ao ano, classificada pela OMS como <strong class="${termCls}">${clsLabel}</strong>. Na média, são <strong>${fmtAvg(last12Avg)}</strong> vítimas por mês.${population < 50000 ? ' Em municípios pequenos, poucos casos mudam muito a taxa; a média móvel do gráfico mostra melhor a tendência.' : ''}</p>
     <p>No mesmo período, a cidade teve em média <strong>${fmtAvg(theftAvg)}</strong> roubos e <strong>${fmtAvg(vehAvg)}</strong> roubos de veículo por mês (<strong>${fmtAvg(theftRate)}</strong> e <strong>${fmtAvg(vehRate)}</strong> por 100 mil habitantes ao ano) — ${trendPhrase(theftPct)} e ${trendPhrase(vehPct)} na comparação anual, respectivamente.</p>
   `;
 
@@ -615,7 +615,7 @@ function render(key) {
     },
     {
       q: 'De onde vêm esses dados e quando são atualizados?',
-      a: `Os dados de criminalidade são oficiais, publicados pela Secretaria da Segurança Pública do RS (SSP-RS), e a população é estimada pelo IBGE. A série é mensal, começa em janeiro de 2011 e vai até ${lastUpdateText}, sendo atualizada a cada novo relatório da SSP-RS. Além de Porto Alegre, o site cobre os municípios da Região Metropolitana. Este site não é oficial.`
+      a: `Os dados de criminalidade são oficiais, publicados pela Secretaria da Segurança Pública do RS (SSP-RS), e a população é estimada pelo IBGE. A série é mensal, começa em janeiro de 2011 e vai até ${lastUpdateText}, sendo atualizada a cada novo relatório da SSP-RS. Além de Porto Alegre, o site cobre os municípios da Região Metropolitana e do Litoral Norte. Este site não é oficial.`
     }
   ];
 
@@ -644,9 +644,12 @@ function render(key) {
 
 // ---- Seletor de município (?m=canoas) ----
 const select = document.getElementById('municipioSelect');
-const sortedKeys = Object.keys(DATA.municipios).sort((a, b) =>
-  a === DEFAULT_KEY ? -1 : b === DEFAULT_KEY ? 1 : DATA.municipios[a].nome.localeCompare(DATA.municipios[b].nome, 'pt-BR'));
-select.innerHTML = sortedKeys.map(k => `<option value="${k}">${DATA.municipios[k].nome}</option>`).join('');
+const optionsFor = regiao => Object.keys(DATA.municipios)
+  .filter(k => k !== DEFAULT_KEY && DATA.municipios[k].regiao === regiao)
+  .sort((a, b) => DATA.municipios[a].nome.localeCompare(DATA.municipios[b].nome, 'pt-BR'))
+  .map(k => `<option value="${k}">${DATA.municipios[k].nome}</option>`).join('');
+select.innerHTML = `<option value="${DEFAULT_KEY}">${DATA.municipios[DEFAULT_KEY].nome}</option>` +
+  ['Região Metropolitana', 'Litoral Norte'].map(r => `<optgroup label="${r}">${optionsFor(r)}</optgroup>`).join('');
 
 const keyFromUrl = () => keyBySlug[new URLSearchParams(location.search).get('m') || ''] || DEFAULT_KEY;
 select.value = keyFromUrl();

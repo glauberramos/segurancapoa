@@ -71,6 +71,8 @@ def col_key(h):
         return 'vit_latro'
     if h == 'VITIMAS DE LESAO CORP. SEG. MORTE':
         return 'vit_lesao'
+    if 'CVLI' in h:
+        return 'cvli'
     if h == 'ROUBOS':
         return 'roubos'
     if h == 'ROUBO DE VEICULO':
@@ -98,7 +100,9 @@ def parse_rows(rows):
 def cvli(d, year):
     if year == 2011:  # só ocorrências disponíveis
         return d['hom'] + d['latro']
-    # Mesma metodologia da série original do site (a coluna "CVLI" das planilhas 2018+ não é usada).
+    if year >= 2018:  # total oficial da SSP-RS (inclui feminicídio e mortes por intervenção policial)
+        return d['cvli']
+    # 2012–2017: as planilhas não trazem o total de CVLI
     return d['vit_hom'] + d['vit_latro'] + d['vit_lesao']
 
 

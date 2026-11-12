@@ -171,7 +171,13 @@ def load_year(year):
         return [parse_rows([ws.row_values(i) for i in range(ws.nrows)])
                 for ws in (wb.sheet_by_name(m) for m in MONTHS)]
     if year == 2026:
-        path = find('*-jul-2026-*.xlsx')
+        # planilha parcial mais recente do ano (ex.: ...-municipios-set-2026-atualizado-...)
+        meses = [m.lower() for m in MONTHS]
+        def mes(f):
+            m = re.search(r'-(' + '|'.join(meses) + r')-2026-', os.path.basename(f))
+            return meses.index(m.group(1)) if m else -1
+        path = max(glob.glob(os.path.join(ROOT, '*2026*.xlsx')), key=mes)
+        assert mes(path) >= 0, path
     else:
         path = [f for f in glob.glob(os.path.join(ROOT, '*.xlsx'))
                 if re.search(rf'(?<!\d){year}(?!\d)', os.path.basename(f).split('atualizado')[0])]
@@ -179,8 +185,15 @@ def load_year(year):
         path = path[0]
     wb = openpyxl.load_workbook(path, read_only=True, data_only=True)
     names = [w.title for w in wb.worksheets]
-    return [parse_rows([list(r) for r in wb[m].iter_rows(values_only=True)])
-            for m in MONTHS if m in names]
+    months = []
+    for m in MONTHS:
+        if m not in names:
+            break
+        rows = parse_rows([list(r) for r in wb[m].iter_rows(values_only=True)])
+        if not rows:  # abas de meses futuros vêm vazias (modelo)
+            break
+        months.append(rows)
+    return months
 
 
 def main():

@@ -89,8 +89,10 @@ header.hero {
 }
 .city-picker {
   display: inline-flex;
+  flex-wrap: wrap;
   align-items: center;
   gap: 0.6rem;
+  max-width: 100%;
   margin-bottom: 1rem;
   background: var(--panel);
   border: 1px solid var(--border);
@@ -118,6 +120,7 @@ header.hero {
   max-width: 100%;
 }
 .city-picker select:focus-visible { outline: 2px solid #3b82f6; outline-offset: 1px; }
+.city-picker .picker-field { display: inline-flex; align-items: center; gap: 0.6rem; min-width: 0; }
 header.hero h1 {
   font-size: 1.75rem;
   font-weight: 700;
@@ -305,8 +308,14 @@ footer a:hover { text-decoration: underline; }
 <body>
 <header class="hero">
   <div class="city-picker">
-    <label for="municipioSelect">Município</label>
-    <select id="municipioSelect" aria-label="Escolha o município"></select>
+    <span class="picker-field">
+      <label for="municipioSelect">Município</label>
+      <select id="municipioSelect" aria-label="Escolha o município"></select>
+    </span>
+    <span class="picker-field">
+      <label for="omsSelect">Classificação OMS</label>
+      <select id="omsSelect" aria-label="Filtrar municípios pela classificação da OMS"></select>
+    </span>
   </div>
   <h1>Segurança em <span id="cityName">Porto Alegre</span></h1>
   <p class="subtitle">Homicídios dolosos e roubos · jan/2011 – <span id="lastUpdate"></span></p>
@@ -614,18 +623,48 @@ function render(key) {
   lineChart('chartVehicleMonthly', 'Roubo de Veículo (mês)', '#9b59b6', vehicleMonthlyData);
 }
 
-// ---- Seletor de município (?m=canoas) ----
+// ---- Seletor de município (?m=canoas) + filtro pela classificação da OMS ----
 const select = document.getElementById('municipioSelect');
+const omsSelect = document.getElementById('omsSelect');
+
+// Classificação de cada município pela taxa de CVLI dos últimos 12 meses (mesma conta dos cards).
+const clsByKey = Object.fromEntries(Object.entries(DATA.municipios).map(([k, m]) => {
+  const sum = m.cvli.slice(-12).reduce((a, b) => a + b, 0);
+  return [k, classify((sum / m.populacao) * 100000).cls];
+}));
+const OMS_CLASSES = [['low', 'Baixa'], ['med', 'Média'], ['high', 'Alta (epidêmica)'], ['epidemic', 'Muito alta']];
+const countBy = c => Object.values(clsByKey).filter(v => v === c).length;
+omsSelect.innerHTML = `<option value="">Todas (${Object.keys(clsByKey).length})</option>` +
+  OMS_CLASSES.map(([c, label]) => `<option value="${c}"${countBy(c) ? '' : ' disabled'}>${label} (${countBy(c)})</option>`).join('');
+
+const matchesOms = k => !omsSelect.value || clsByKey[k] === omsSelect.value;
 const optionsFor = regiao => Object.keys(DATA.municipios)
-  .filter(k => k !== DEFAULT_KEY && DATA.municipios[k].regiao === regiao)
+  .filter(k => k !== DEFAULT_KEY && DATA.municipios[k].regiao === regiao && matchesOms(k))
   .sort((a, b) => DATA.municipios[a].nome.localeCompare(DATA.municipios[b].nome, 'pt-BR'))
   .map(k => `<option value="${k}">${DATA.municipios[k].nome}</option>`).join('');
-select.innerHTML = `<option value="${DEFAULT_KEY}">${DATA.municipios[DEFAULT_KEY].nome}</option>` +
-  ['Região Metropolitana', 'Litoral Norte', 'Serra'].map(r => `<optgroup label="${r}">${optionsFor(r)}</optgroup>`).join('');
+function fillMunicipios() {
+  select.innerHTML = (matchesOms(DEFAULT_KEY) ? `<option value="${DEFAULT_KEY}">${DATA.municipios[DEFAULT_KEY].nome}</option>` : '') +
+    ['Região Metropolitana', 'Litoral Norte', 'Serra'].map(r => {
+      const opts = optionsFor(r);
+      return opts ? `<optgroup label="${r}">${opts}</optgroup>` : '';
+    }).join('');
+}
 
 const keyFromUrl = () => keyBySlug[new URLSearchParams(location.search).get('m') || ''] || DEFAULT_KEY;
+fillMunicipios();
 select.value = keyFromUrl();
 render(select.value);
+
+omsSelect.addEventListener('change', () => {
+  const current = select.value;
+  fillMunicipios();
+  if (DATA.municipios[current] && matchesOms(current)) {
+    select.value = current; // município atual continua na lista: só filtra as opções
+  } else {
+    select.selectedIndex = 0; // senão, vai para o primeiro município da classificação escolhida
+    select.dispatchEvent(new Event('change'));
+  }
+});
 
 select.addEventListener('change', () => {
   const key = select.value;
@@ -636,7 +675,9 @@ select.addEventListener('change', () => {
   render(key);
 });
 window.addEventListener('popstate', () => {
-  select.value = keyFromUrl();
+  const key = keyFromUrl();
+  if (!matchesOms(key)) { omsSelect.value = ''; fillMunicipios(); }
+  select.value = key;
   render(select.value);
 });
 </script>
